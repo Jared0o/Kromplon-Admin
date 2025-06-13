@@ -67,4 +67,4 @@ jobs:
             docker pull ghcr.io/${{ env.REPO_OWNER_LOWER }}/kromplon-admin:latest
             docker stop kromplon-admin || true
             docker rm kromplon-admin || true
-            docker run -d --name kromplon-api -p 8000:80 ghcr.io/${{ env.REPO_OWNER_LOWER }}/kromplon-admin:latest
+            docker run -d --name kromplon-admin -p 8000:80 ghcr.io/${{ env.REPO_OWNER_LOWER }}/kromplon-admin:latest
