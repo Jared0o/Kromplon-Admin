@@ -44,3 +44,27 @@ jobs:
           tags: |
             ghcr.io/${{ env.REPO_OWNER_LOWER }}/${{ matrix.service.tag }}:latest
             ghcr.io/${{ env.REPO_OWNER_LOWER }}/${{ matrix.service.tag }}:${{ github.sha }}
+
+  deploy:
+    name: Deploy to VPS
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set lowercase repo variables
+        id: vars
+        run: |
+          echo "REPO_OWNER_LOWER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Deploy and restart Docker container via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          port: ${{ secrets.VPS_PORT }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            docker pull ghcr.io/${{ env.REPO_OWNER_LOWER }}/kromplon-admin:latest
+            docker stop kromplon-admin || true
+            docker rm kromplon-admin || true
+            docker run -d --name kromplon-api -p 8000:80 ghcr.io/${{ env.REPO_OWNER_LOWER }}/kromplon-admin:latest
